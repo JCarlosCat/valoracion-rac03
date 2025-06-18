@@ -1,11 +1,9 @@
-# Código corregido de `app.py` con exportación compatible con Streamlit Cloud (usando BytesIO en lugar de escribir en disco)
-codigo_app_corregido = '''
 import streamlit as st
 import pandas as pd
 import io
 from openpyxl import Workbook
 
-# Lista donde se almacenan los registros temporalmente
+# Inicializar la lista de postulantes si no existe
 if 'postulantes' not in st.session_state:
     st.session_state.postulantes = []
 
@@ -29,11 +27,12 @@ with st.form("formulario_postulante"):
     universidad = st.text_input("Universidad")
     anio_titulacion = st.text_input("Año de Titulación")
 
-    # Puntos por título de licenciatura
+    # Licenciatura
     tiene_licenciatura = st.checkbox("¿Tiene Licenciatura?")
     puntos_licenciatura = 60
     puntos_licenciatura_adicional = 30
 
+    # Maestrías
     tiene_maestria = st.checkbox("¿Tiene Maestría?")
     cantidad_maestrias = st.number_input("¿Cuántas maestrías?", 0, 5, 0)
     puntos_maestria = 0
@@ -41,6 +40,7 @@ with st.form("formulario_postulante"):
         puntos_maestria += 200
         puntos_maestria += 100 * (cantidad_maestrias - 1)
 
+    # Doctorados
     tiene_doctorado = st.checkbox("¿Tiene Doctorado?")
     cantidad_doctorados = st.number_input("¿Cuántos doctorados?", 0, 3, 0)
     puntos_doctorado = 0
@@ -48,10 +48,12 @@ with st.form("formulario_postulante"):
         puntos_doctorado += 300
         puntos_doctorado += 150 * (cantidad_doctorados - 1)
 
+    # Postdoctorado
     tiene_postdoc = st.checkbox("¿Tiene Postdoctorado?")
     cantidad_postdoc = st.number_input("¿Cuántos postdoctorados?", 0, 3, 0)
     puntos_postdoc = 400 * cantidad_postdoc
 
+    # Cálculo total
     total_estudios = 0
     if tiene_licenciatura:
         total_estudios += puntos_licenciatura + puntos_licenciatura_adicional
@@ -59,7 +61,7 @@ with st.form("formulario_postulante"):
     total_estudios += puntos_doctorado
     total_estudios += puntos_postdoc
     if total_estudios > 1900:
-        total_estudios = 1900  # límite máximo según RAC-03
+        total_estudios = 1900  # Límite del Art. 29
 
     st.success(f"Puntaje total en Estudios Académicos: {total_estudios} / 1900")
 
@@ -83,12 +85,12 @@ with st.form("formulario_postulante"):
         })
         st.success(f"Postulante {nombres} registrado con éxito.")
 
-# Mostrar resultados
+# Mostrar tabla
 st.subheader("Postulantes Registrados")
 df = pd.DataFrame(st.session_state.postulantes)
 st.dataframe(df)
 
-# Exportar Excel en memoria (Streamlit Cloud compatible)
+# Exportar a Excel en memoria (funciona en Streamlit Cloud)
 if st.button("Descargar Excel"):
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -100,11 +102,7 @@ if st.button("Descargar Excel"):
         file_name="evaluacion_meritos_rac03.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-'''
 
-# Guardar el archivo corregido
-with open("/mnt/data/app.py", "w", encoding="utf-8") as f:
-    f.write(codigo_app_corregido)
 
 
 

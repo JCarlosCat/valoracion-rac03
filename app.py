@@ -1,10 +1,9 @@
-# Vamos a generar un nuevo archivo `app.py` con un formulario más detallado para la sección de Estudios Académicos,
-# según el Artículo 29 y la imagen de ejemplo proporcionada por el usuario. También se mantendrá el diseño modular
-# para expandir otras secciones más adelante, con validaciones de puntaje máximo por campo.
-
-nuevo_app_py_content = '''
+# Código corregido de `app.py` con exportación compatible con Streamlit Cloud (usando BytesIO en lugar de escribir en disco)
+codigo_app_corregido = '''
 import streamlit as st
 import pandas as pd
+import io
+from openpyxl import Workbook
 
 # Lista donde se almacenan los registros temporalmente
 if 'postulantes' not in st.session_state:
@@ -89,15 +88,24 @@ st.subheader("Postulantes Registrados")
 df = pd.DataFrame(st.session_state.postulantes)
 st.dataframe(df)
 
-# Exportar
+# Exportar Excel en memoria (Streamlit Cloud compatible)
 if st.button("Descargar Excel"):
-    df.to_excel("evaluacion_meritos_rac03.xlsx", index=False)
-    with open("evaluacion_meritos_rac03.xlsx", "rb") as f:
-        st.download_button("Haz clic para descargar", f, file_name="evaluacion_meritos_rac03.xlsx")
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Postulantes')
+    output.seek(0)
+    st.download_button(
+        label="Haz clic para descargar",
+        data=output,
+        file_name="evaluacion_meritos_rac03.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 '''
 
-# Guardar archivo modificado
+# Guardar el archivo corregido
 with open("/mnt/data/app.py", "w", encoding="utf-8") as f:
-    f.write(nuevo_app_py_content)
+    f.write(codigo_app_corregido)
+
+
 
 
